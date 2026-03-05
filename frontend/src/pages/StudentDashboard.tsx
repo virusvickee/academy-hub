@@ -174,9 +174,24 @@ export default function StudentDashboard() {
               {previewDoc?.fileName}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden rounded-xl border">
+          <div className="flex-1 overflow-hidden rounded-xl border bg-muted/50 flex items-center justify-center">
             {previewDoc && (
-              <iframe src={previewDoc.fileUrl} className="h-full w-full" title="PDF Preview" />
+              <div className="text-center space-y-4 p-8">
+                <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
+                <div>
+                  <p className="font-medium mb-2">{previewDoc.fileName}</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {previewDoc.subjectName} • {previewDoc.className} • {previewDoc.schoolName}
+                  </p>
+                  <Button 
+                    onClick={() => window.open(previewDoc.fileUrl, '_blank')}
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Open PDF in New Tab
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </DialogContent>

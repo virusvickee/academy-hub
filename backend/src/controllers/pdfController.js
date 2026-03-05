@@ -18,10 +18,12 @@ export const uploadPdf = async (req, res) => {
 
     let result;
     try {
-      // Upload to Cloudinary
+      // Upload to Cloudinary with proper settings for PDF viewing
       result = await cloudinary.uploader.upload(file.path, {
         resource_type: 'raw',
-        folder: 'academy-hub-pdfs'
+        folder: 'academy-hub-pdfs',
+        type: 'upload',
+        access_mode: 'public'
       });
     } finally {
       // Always cleanup temp file
