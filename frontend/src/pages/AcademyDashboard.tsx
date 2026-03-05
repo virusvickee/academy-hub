@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Upload, LogOut, Trash2, FileText, School } from "lucide-react";
+import { Upload, LogOut, Trash2, FileText, School, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,6 +23,10 @@ export default function AcademyDashboard() {
   const [schoolName, setSchoolName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [docs, setDocs] = useState<PdfDocument[]>(() => store.getMyPdfs(user!.id));
+  const [editDoc, setEditDoc] = useState<PdfDocument | null>(null);
+  const [editSubject, setEditSubject] = useState("");
+  const [editClass, setEditClass] = useState("");
+  const [editSchool, setEditSchool] = useState("");
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +59,26 @@ export default function AcademyDashboard() {
     store.deletePdf(id);
     setDocs((prev) => prev.filter((d) => d.id !== id));
     toast.success("PDF deleted");
+  };
+
+  const openEdit = (doc: PdfDocument) => {
+    setEditDoc(doc);
+    setEditSubject(doc.subjectName);
+    setEditClass(doc.className);
+    setEditSchool(doc.schoolName);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editDoc) return;
+    const updated = store.updatePdf(editDoc.id, {
+      subjectName: editSubject,
+      className: editClass,
+      schoolName: editSchool,
+    });
+    setDocs((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+    setEditDoc(null);
+    toast.success("PDF updated successfully!");
   };
 
   const handleLogout = () => { logout(); navigate("/login"); };
@@ -153,7 +178,7 @@ export default function AcademyDashboard() {
                         <TableHead>Class</TableHead>
                         <TableHead>School</TableHead>
                         <TableHead>Date</TableHead>
-                        <TableHead className="w-12"></TableHead>
+                        <TableHead className="w-24"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -177,9 +202,14 @@ export default function AcademyDashboard() {
                             <TableCell>{doc.schoolName}</TableCell>
                             <TableCell className="text-muted-foreground text-xs">{new Date(doc.uploadedAt).toLocaleDateString()}</TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="icon" onClick={() => handleDelete(doc.id)} className="hover:bg-destructive/10 hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => openEdit(doc)} className="hover:bg-primary/10 hover:text-primary">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDelete(doc.id)} className="hover:bg-destructive/10 hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </motion.tr>
                         ))}
@@ -192,6 +222,33 @@ export default function AcademyDashboard() {
           </Card>
         </motion.div>
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editDoc} onOpenChange={(open) => !open && setEditDoc(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" />
+              Edit PDF Details
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-subject">Subject Name</Label>
+              <Input id="edit-subject" required value={editSubject} onChange={(e) => setEditSubject(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-class">Class Name</Label>
+              <Input id="edit-class" required value={editClass} onChange={(e) => setEditClass(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-school">School Name</Label>
+              <Input id="edit-school" required value={editSchool} onChange={(e) => setEditSchool(e.target.value)} />
+            </div>
+            <Button type="submit" className="w-full">Update PDF</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

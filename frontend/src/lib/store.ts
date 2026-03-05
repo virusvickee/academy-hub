@@ -110,4 +110,13 @@ export const store = {
     localStorage.setItem(PDFS_KEY, JSON.stringify(pdfs));
     cache.clear();
   },
-};
+
+  updatePdf(id: string, updates: Partial<Pick<PdfDocument, "subjectName" | "className" | "schoolName">>) {
+    const pdfs = getPdfs();
+    const index = pdfs.findIndex((p) => p.id === id);
+    if (index === -1) throw new Error("PDF not found");
+    pdfs[index] = { ...pdfs[index], ...updates };
+    localStorage.setItem(PDFS_KEY, JSON.stringify(pdfs));
+    cache.clear();
+    return pdfs[index];
+  },};
