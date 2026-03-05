@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { store, PdfDocument } from "@/lib/store";
+import { pdfAPI } from "@/lib/api";
+import { PdfDocument } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +23,27 @@ export default function StudentDashboard() {
   const [school, setSchool] = useState("");
   const [results, setResults] = useState<PdfDocument[]>([]);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<PdfDocument | null>(null);
 
-  const handleSearch = (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    const docs = store.searchPdfs({ subject, className, school });
-    setResults(docs);
-    setSearched(true);
-    if (docs.length === 0) toast.info("No documents found");
+    setLoading(true);
+    try {
+      const params: any = {};
+      if (subject) params.subject = subject;
+      if (className) params.className = className;
+      if (school) params.school = school;
+
+      const docs = await pdfAPI.search(params);
+      setResults(docs.map((d: any) => ({ ...d, id: d._id, uploadedAt: d.createdAt })));
+      setSearched(true);
+      if (docs.length === 0) toast.info("No documents found");
+    } catch (error: any) {
+      toast.error(error.message || "Search failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => { logout(); navigate("/login"); };
@@ -89,8 +103,9 @@ export default function StudentDashboard() {
                   <Input id="s-school" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Springfield High" className="h-11" />
                 </div>
                 <div className="sm:col-span-3">
-                  <Button type="submit" className="gradient-primary text-primary-foreground font-semibold gap-2 h-11 px-6 group">
-                    <Search className="h-4 w-4 transition-transform group-hover:scale-110" /> Search
+                  <Button type="submit" disabled={loading} className="gradient-primary text-primary-foreground font-semibold gap-2 h-11 px-6 group">
+                    <Search className="h-4 w-4 transition-transform group-hover:scale-110" /> 
+                    {loading ? "Searching..." : "Search"}
                   </Button>
                 </div>
               </form>

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { store, PdfDocument } from "@/lib/store";
+import { pdfAPI } from "@/lib/api";
+import { PdfDocument } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,28 +23,41 @@ export default function AcademyDashboard() {
   const [className, setClassName] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [docs, setDocs] = useState<PdfDocument[]>(() => store.getMyPdfs(user!.id));
+  const [docs, setDocs] = useState<PdfDocument[]>([]);
+  const [loading, setLoading] = useState(false);
   const [editDoc, setEditDoc] = useState<PdfDocument | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editClass, setEditClass] = useState("");
   const [editSchool, setEditSchool] = useState("");
 
-  const handleUpload = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadPdfs();
+  }, []);
+
+  const loadPdfs = async () => {
+    try {
+      const data = await pdfAPI.getMyPdfs();
+      setDocs(data.map((d: any) => ({ ...d, id: d._id, uploadedAt: d.createdAt })));
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load PDFs");
+    }
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return toast.error("Please select a PDF file");
     if (file.type !== "application/pdf") return toast.error("Only PDF files allowed");
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const doc = store.uploadPdf({
-        fileName: file.name,
-        fileUrl: reader.result as string,
-        subjectName,
-        className,
-        schoolName,
-        uploadedBy: user!.id,
-      });
-      setDocs((prev) => [...prev, doc]);
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", file);
+      formData.append("subjectName", subjectName);
+      formData.append("className", className);
+      formData.append("schoolName", schoolName);
+
+      const doc = await pdfAPI.upload(formData);
+      setDocs((prev) => [{ ...doc, id: doc._id, uploadedAt: doc.createdAt }, ...prev]);
       setSubjectName("");
       setClassName("");
       setSchoolName("");
@@ -51,14 +65,21 @@ export default function AcademyDashboard() {
       const input = document.getElementById("pdf-file") as HTMLInputElement;
       if (input) input.value = "";
       toast.success("PDF uploaded successfully!");
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      toast.error(error.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    store.deletePdf(id);
-    setDocs((prev) => prev.filter((d) => d.id !== id));
-    toast.success("PDF deleted");
+  const handleDelete = async (id: string) => {
+    try {
+      await pdfAPI.delete(id);
+      setDocs((prev) => prev.filter((d) => d.id !== id));
+      toast.success("PDF deleted");
+    } catch (error: any) {
+      toast.error(error.message || "Delete failed");
+    }
   };
 
   const openEdit = (doc: PdfDocument) => {
@@ -68,17 +89,22 @@ export default function AcademyDashboard() {
     setEditSchool(doc.schoolName);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editDoc) return;
-    const updated = store.updatePdf(editDoc.id, {
-      subjectName: editSubject,
-      className: editClass,
-      schoolName: editSchool,
-    });
-    setDocs((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-    setEditDoc(null);
-    toast.success("PDF updated successfully!");
+    
+    try {
+      const updated = await pdfAPI.update(editDoc.id, {
+        subjectName: editSubject,
+        className: editClass,
+        schoolName: editSchool,
+      });
+      setDocs((prev) => prev.map((d) => (d.id === editDoc.id ? { ...updated, id: updated._id } : d)));
+      setEditDoc(null);
+      toast.success("PDF updated successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Update failed");
+    }
   };
 
   const handleLogout = () => { logout(); navigate("/login"); };
@@ -143,8 +169,9 @@ export default function AcademyDashboard() {
                   <Input id="pdf-file" type="file" accept=".pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="h-11" />
                 </div>
                 <div className="sm:col-span-2">
-                  <Button type="submit" className="gradient-accent text-accent-foreground font-semibold gap-2 h-11 px-6 group">
-                    <Upload className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" /> Upload PDF
+                  <Button type="submit" disabled={loading} className="gradient-accent text-accent-foreground font-semibold gap-2 h-11 px-6 group">
+                    <Upload className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" /> 
+                    {loading ? "Uploading..." : "Upload PDF"}
                   </Button>
                 </div>
               </form>
