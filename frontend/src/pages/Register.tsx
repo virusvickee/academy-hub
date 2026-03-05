@@ -15,17 +15,21 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"academy" | "student">("student");
+  const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const user = register(email, password, role, name);
+      const user = await register(email, password, role, name);
       toast.success("Account created!");
       navigate(user.role === "academy" ? "/academy" : "/student");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,8 +105,8 @@ export default function Register() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4 pt-2">
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full">
-                <Button type="submit" className={`w-full h-11 font-semibold text-base gap-2 group ${role === "academy" ? "gradient-accent text-accent-foreground" : "gradient-primary text-primary-foreground"}`}>
-                  Create Account
+                <Button type="submit" disabled={loading} className={`w-full h-11 font-semibold text-base gap-2 group ${role === "academy" ? "gradient-accent text-accent-foreground" : "gradient-primary text-primary-foreground"}`}>
+                  {loading ? "Creating Account..." : "Create Account"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </motion.div>

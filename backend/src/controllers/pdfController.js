@@ -1,5 +1,11 @@
 import Pdf from '../models/Pdf.js';
 import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs/promises';
+
+// Escape regex metacharacters
+const escapeRegex = (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
 export const uploadPdf = async (req, res) => {
   try {
@@ -10,11 +16,21 @@ export const uploadPdf = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(file.path, {
-      resource_type: 'raw',
-      folder: 'academy-hub-pdfs'
-    });
+    let result;
+    try {
+      // Upload to Cloudinary
+      result = await cloudinary.uploader.upload(file.path, {
+        resource_type: 'raw',
+        folder: 'academy-hub-pdfs'
+      });
+    } finally {
+      // Always cleanup temp file
+      try {
+        await fs.unlink(file.path);
+      } catch (unlinkError) {
+        console.error('Failed to delete temp file:', unlinkError);
+      }
+    }
 
     const pdf = await Pdf.create({
       fileName: file.originalname,
@@ -28,7 +44,8 @@ export const uploadPdf = async (req, res) => {
 
     res.status(201).json(pdf);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('PDF upload error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -37,7 +54,8 @@ export const getMyPdfs = async (req, res) => {
     const pdfs = await Pdf.find({ uploadedBy: req.user.id }).sort({ createdAt: -1 });
     res.json(pdfs);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Get PDFs error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -46,14 +64,21 @@ export const searchPdfs = async (req, res) => {
     const { subject, className, school } = req.query;
     const query = {};
 
-    if (subject) query.subjectName = { $regex: subject, $options: 'i' };
-    if (className) query.className = { $regex: className, $options: 'i' };
-    if (school) query.schoolName = { $regex: school, $options: 'i' };
+    if (subject) {
+      query.subjectName = { $regex: escapeRegex(subject), $options: 'i' };
+    }
+    if (className) {
+      query.className = { $regex: escapeRegex(className), $options: 'i' };
+    }
+    if (school) {
+      query.schoolName = { $regex: escapeRegex(school), $options: 'i' };
+    }
 
     const pdfs = await Pdf.find(query).sort({ createdAt: -1 });
     res.json(pdfs);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Search PDFs error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -67,14 +92,15 @@ export const updatePdf = async (req, res) => {
       return res.status(404).json({ message: 'PDF not found' });
     }
 
-    pdf.subjectName = subjectName || pdf.subjectName;
-    pdf.className = className || pdf.className;
-    pdf.schoolName = schoolName || pdf.schoolName;
+    if (subjectName !== undefined) pdf.subjectName = subjectName;
+    if (className !== undefined) pdf.className = className;
+    if (schoolName !== undefined) pdf.schoolName = schoolName;
 
     await pdf.save();
     res.json(pdf);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Update PDF error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -93,6 +119,7 @@ export const deletePdf = async (req, res) => {
     await pdf.deleteOne();
     res.json({ message: 'PDF deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Delete PDF error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

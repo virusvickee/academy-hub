@@ -11,6 +11,19 @@
 
 ## Setup & Run
 
+### Prerequisites Setup
+
+**Install Dependencies:**
+```bash
+# Backend dependencies
+cd backend
+npm install
+
+# Frontend dependencies
+cd ../frontend
+npm install
+```
+
 ### Option 1: Run Both Servers (Recommended)
 
 **Terminal 1 - Backend:**
@@ -38,15 +51,33 @@ npm run dev
 
 ## Environment Setup
 
+**⚠️ SECURITY WARNING:**
+- **NEVER commit .env files to version control**
+- Ensure .env is in .gitignore
+- Rotate all secrets before deploying to production
+
 ### Backend (.env)
 ```
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/academy-hub
-JWT_SECRET=your_secret_key
+JWT_SECRET=<generate-with-openssl-rand-base64-32>
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
+
+**Generate a strong JWT_SECRET:**
+```bash
+openssl rand -base64 32
+```
+
+**⚠️ Sensitive Variables:**
+- `JWT_SECRET` - Keep secret, rotate for production
+- `MONGODB_URI` - Contains database credentials
+- `CLOUDINARY_API_KEY` - API credentials
+- `CLOUDINARY_API_SECRET` - API credentials
+
+Never commit these to your repository!
 
 ### Frontend (.env)
 ```

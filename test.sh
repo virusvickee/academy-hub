@@ -32,7 +32,15 @@ test_endpoint() {
     fi
     
     http_code=$(echo "$response" | tail -n1)
-    body=$(echo "$response" | head -n-1)
+    body=$(echo "$response" | sed '$d')
+    
+    # Validate http_code is numeric
+    if ! [[ "$http_code" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}✗ FAILED${NC} (Invalid response)"
+        echo "  Response: $body"
+        ((FAILED++))
+        return 1
+    fi
     
     if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
         echo -e "${GREEN}✓ PASSED${NC} (HTTP $http_code)"
@@ -54,13 +62,7 @@ test_endpoint "Health Check" "http://localhost:5000/api/health"
 
 # Test 2: Register Academy
 REGISTER_DATA='{"name":"Test Academy","email":"testacademy@test.com","password":"password123","role":"academy"}'
-if test_endpoint "Register Academy" "http://localhost:5000/api/auth/register" "POST" "$REGISTER_DATA"; then
-    # Extract token (basic parsing)
-    TOKEN=$(curl -s -X POST "http://localhost:5000/api/auth/register" \
-        -H "Content-Type: application/json" \
-        -d '{"name":"Test Academy 2","email":"testacademy2@test.com","password":"password123","role":"academy"}' \
-        | grep -o '"token":"[^"]*' | cut -d'"' -f4)
-fi
+test_endpoint "Register Academy" "http://localhost:5000/api/auth/register" "POST" "$REGISTER_DATA"
 
 # Test 3: Register Student
 REGISTER_STUDENT='{"name":"Test Student","email":"teststudent@test.com","password":"password123","role":"student"}'

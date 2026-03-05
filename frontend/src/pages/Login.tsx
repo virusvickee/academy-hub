@@ -12,17 +12,21 @@ import { motion } from "framer-motion";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const user = login(email, password);
+      const user = await login(email, password);
       toast.success("Welcome back!");
       navigate(user.role === "academy" ? "/academy" : "/student");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,8 +70,8 @@ export default function Login() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4 pt-2">
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full">
-                <Button type="submit" className="w-full h-11 gradient-primary text-primary-foreground font-semibold text-base gap-2 group">
-                  Sign In
+                <Button type="submit" disabled={loading} className="w-full h-11 gradient-primary text-primary-foreground font-semibold text-base gap-2 group">
+                  {loading ? "Signing in..." : "Sign In"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </motion.div>

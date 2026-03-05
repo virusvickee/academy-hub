@@ -17,8 +17,13 @@ export const auth = async (req, res, next) => {
 };
 
 export const isAcademy = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  
   if (req.user.role !== 'academy') {
     return res.status(403).json({ message: 'Access denied. Academy only.' });
   }
+  
   next();
 };

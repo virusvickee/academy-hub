@@ -1,10 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 import { store, User } from "@/lib/store";
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => User;
-  register: (email: string, password: string, role: "academy" | "student", name: string) => User;
+  login: (email: string, password: string) => Promise<User>;
+  register: (email: string, password: string, role: "academy" | "student", name: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -13,15 +13,16 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(store.getCurrentUser());
 
-  const login = (email: string, password: string) => {
-    const u = store.login(email, password);
+  const login = async (email: string, password: string) => {
+    const u = await store.login(email, password);
     setUser(u);
     return u;
   };
 
-  const register = (email: string, password: string, role: "academy" | "student", name: string) => {
-    store.register(email, password, role, name);
-    return store.login(email, password);
+  const register = async (email: string, password: string, role: "academy" | "student", name: string) => {
+    const u = await store.register(email, password, role, name);
+    setUser(u);
+    return u;
   };
 
   const logout = () => {
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register: (e, p, r, n) => { const u = register(e, p, r, n); setUser(u); return u; }, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

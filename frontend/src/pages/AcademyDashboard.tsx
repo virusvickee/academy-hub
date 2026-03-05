@@ -29,6 +29,7 @@ export default function AcademyDashboard() {
   const [editSubject, setEditSubject] = useState("");
   const [editClass, setEditClass] = useState("");
   const [editSchool, setEditSchool] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     loadPdfs();
@@ -93,17 +94,20 @@ export default function AcademyDashboard() {
     e.preventDefault();
     if (!editDoc) return;
     
+    setIsUpdating(true);
     try {
       const updated = await pdfAPI.update(editDoc.id, {
         subjectName: editSubject,
         className: editClass,
         schoolName: editSchool,
       });
-      setDocs((prev) => prev.map((d) => (d.id === editDoc.id ? { ...updated, id: updated._id } : d)));
+      setDocs((prev) => prev.map((d) => (d.id === editDoc.id ? { ...updated, id: updated._id, uploadedAt: updated.createdAt } : d)));
       setEditDoc(null);
       toast.success("PDF updated successfully!");
     } catch (error: any) {
       toast.error(error.message || "Update failed");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -272,7 +276,9 @@ export default function AcademyDashboard() {
               <Label htmlFor="edit-school">School Name</Label>
               <Input id="edit-school" required value={editSchool} onChange={(e) => setEditSchool(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full">Update PDF</Button>
+            <Button type="submit" disabled={isUpdating} className="w-full">
+              {isUpdating ? "Updating..." : "Update PDF"}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

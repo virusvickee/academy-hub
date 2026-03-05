@@ -29,22 +29,40 @@ export const store = {
   async register(email: string, password: string, role: UserRole, name: string): Promise<User> {
     try {
       const data = await authAPI.register(name, email, password, role);
+      
+      // Validate response
+      if (!data || !data.token || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
       return data.user;
-    } catch (error: any) {
-      throw new Error(error.message || "Registration failed");
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Registration failed');
     }
   },
 
   async login(email: string, password: string): Promise<User> {
     try {
       const data = await authAPI.login(email, password);
+      
+      // Validate response
+      if (!data || !data.token || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
       return data.user;
-    } catch (error: any) {
-      throw new Error(error.message || "Login failed");
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Login failed');
     }
   },
 
