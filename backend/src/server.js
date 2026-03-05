@@ -30,6 +30,28 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/pdfs', pdfRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Academy Hub API',
+    status: 'running',
+    endpoints: {
+      health: '/api/health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login'
+      },
+      pdfs: {
+        upload: 'POST /api/pdfs/upload',
+        myPdfs: 'GET /api/pdfs/my-pdfs',
+        search: 'GET /api/pdfs/search',
+        update: 'PUT /api/pdfs/:id',
+        delete: 'DELETE /api/pdfs/:id'
+      }
+    }
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
