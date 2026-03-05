@@ -18,12 +18,10 @@ export const uploadPdf = async (req, res) => {
 
     let result;
     try {
-      // Upload to Cloudinary as image type for better PDF viewing
+      // Upload to Cloudinary as raw file
       result = await cloudinary.uploader.upload(file.path, {
-        resource_type: 'image',
-        folder: 'academy-hub-pdfs',
-        format: 'pdf',
-        flags: 'attachment:false'
+        resource_type: 'raw',
+        folder: 'academy-hub-pdfs'
       });
     } finally {
       // Always cleanup temp file
@@ -116,7 +114,7 @@ export const deletePdf = async (req, res) => {
     }
 
     // Delete from Cloudinary
-    await cloudinary.uploader.destroy(pdf.publicId, { resource_type: 'image', invalidate: true });
+    await cloudinary.uploader.destroy(pdf.publicId, { resource_type: 'raw' });
 
     await pdf.deleteOne();
     res.json({ message: 'PDF deleted successfully' });
