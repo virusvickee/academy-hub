@@ -1,8 +1,23 @@
 # Quick Deployment Steps
 
 ## 1. Push to GitHub
+
+⚠️ **Before pushing, ensure sensitive files are in .gitignore:**
 ```bash
-git add .
+# Verify .gitignore includes:
+# .env
+# .env.*
+# !.env.example
+# node_modules/
+# dist/
+# build/
+
+# Review changes before committing
+git status
+git diff
+
+# Stage specific files (avoid "git add .")
+git add backend/ frontend/ README.md
 git commit -m "Ready for deployment"
 git push origin main
 ```
@@ -16,7 +31,7 @@ git push origin main
    - Root Directory: `backend`
    - Build: `npm install`
    - Start: `npm start`
-5. Add Environment Variables (from backend/.env)
+5. **Copy environment variables** from your local `backend/.env` (⚠️ do NOT commit this file to the repo; ensure it's in .gitignore) into Render's dashboard
 6. Deploy!
 
 ## 3. Deploy Frontend to Vercel
@@ -26,18 +41,20 @@ git push origin main
 3. Settings:
    - Root Directory: `frontend`
    - Framework: Vite
-4. Add Environment Variable:
-   - `VITE_API_URL` = `https://YOUR-BACKEND.onrender.com/api`
+4. **Add Environment Variable in Vercel dashboard**:
+   - Key: `VITE_API_URL`
+   - Value: `https://YOUR-BACKEND.onrender.com/api` (use your actual Render backend URL from step 2)
 5. Deploy!
 
-## 4. Update Frontend .env.production
+**Note**: Vercel will automatically use the environment variable during build. No need to commit `.env.production` to git.
 
-After backend deploys, update:
-```
-VITE_API_URL=https://YOUR-ACTUAL-BACKEND-URL.onrender.com/api
-```
+## 4. Verify Deployment
 
-Then redeploy frontend on Vercel.
+After both services deploy:
+- Backend: https://YOUR-APP.onrender.com/api/health
+- Frontend: https://YOUR-APP.vercel.app
+
+Test the full flow: Register → Login → Upload PDF → Search
 
 ## Done! 🎉
 

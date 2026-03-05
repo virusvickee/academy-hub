@@ -8,6 +8,12 @@ export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    // Validate JWT_SECRET before any user creation
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
     // Validate role against allowlist
     if (!role || !ALLOWED_ROLES.includes(role)) {
       return res.status(400).json({ message: 'Invalid role. Must be academy or student' });
@@ -24,12 +30,6 @@ export const register = async (req, res) => {
       password,
       role
     });
-
-    // Validate JWT_SECRET
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET is not configured');
-      return res.status(500).json({ message: 'Server configuration error' });
-    }
 
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },

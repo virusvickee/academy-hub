@@ -19,11 +19,12 @@ fi
 cleanup() {
     echo ""
     echo "Stopping servers..."
+    # Kill process groups to ensure child processes are terminated
     if [ -n "$BACKEND_PID" ]; then
-        kill "$BACKEND_PID" 2>/dev/null || true
+        kill -- -"$BACKEND_PID" 2>/dev/null || true
     fi
     if [ -n "$FRONTEND_PID" ]; then
-        kill "$FRONTEND_PID" 2>/dev/null || true
+        kill -- -"$FRONTEND_PID" 2>/dev/null || true
     fi
     exit
 }
@@ -37,7 +38,7 @@ if ! cd "$SCRIPT_DIR/backend"; then
     echo "Error: Failed to change to backend directory"
     exit 1
 fi
-npm run dev &
+setsid npm run dev &
 BACKEND_PID=$!
 
 # Wait a bit for backend to start
@@ -47,10 +48,10 @@ sleep 3
 echo "🎨 Starting Frontend Server (Port 5173)..."
 if ! cd "$SCRIPT_DIR/frontend"; then
     echo "Error: Failed to change to frontend directory"
-    kill "$BACKEND_PID" 2>/dev/null || true
+    kill -- -"$BACKEND_PID" 2>/dev/null || true
     exit 1
 fi
-npm run dev &
+setsid npm run dev &
 FRONTEND_PID=$!
 
 echo ""

@@ -9,7 +9,8 @@ const connectDB = async () => {
       process.exit(1);
     }
     
-    await mongoose.connect(uri);
+    const trimmedUri = uri.trim();
+    await mongoose.connect(trimmedUri);
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);

@@ -30,13 +30,15 @@ In Render dashboard, add these environment variables:
 
 ```
 PORT=5000
-MONGODB_URI=mongodb+srv://vikasuniyalcsa_db_user:86e5erCY0N6kGEPk@cluster0.boejcjg.mongodb.net/?appName=Cluster0
-JWT_SECRET=5d9fd20bf8e8d88f1541a8904686c34e
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
+JWT_SECRET=<your_jwt_secret_here>
 NODE_ENV=production
-CLOUDINARY_CLOUD_NAME=dxeojvo9g
-CLOUDINARY_API_KEY=917856375913817
-CLOUDINARY_API_SECRET=TYvS3sFjV-GEDqC-fBBz50i1cqM
+CLOUDINARY_CLOUD_NAME=<your_cloud_name>
+CLOUDINARY_API_KEY=<your_api_key>
+CLOUDINARY_API_SECRET=<your_api_secret>
 ```
+
+⚠️ **IMPORTANT**: Use your actual credentials from your local `backend/.env` file (which should NEVER be committed to git).
 
 ### Step 4: Deploy
 - Click **"Create Web Service"**
@@ -104,7 +106,8 @@ vercel --prod
 
 ### MongoDB Atlas
 - ✅ Already configured with cloud database
-- Whitelist Render IPs if needed (or use 0.0.0.0/0)
+- ⚠️ **Security Note**: Avoid using 0.0.0.0/0 in production. Whitelist only Render's specific outbound IPs (see your Render service dashboard → Settings → Outbound IPs).
+- For development/testing only, you may temporarily use 0.0.0.0/0
 
 ### Cloudinary
 - ✅ Already configured

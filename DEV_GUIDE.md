@@ -59,8 +59,14 @@ npm run dev
 ### Backend (.env)
 ```
 PORT=5000
+# Development (local MongoDB)
 MONGODB_URI=mongodb://localhost:27017/academy-hub
-JWT_SECRET=<generate-with-openssl-rand-base64-32>
+# Production (MongoDB Atlas with credentials)
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority
+
+# Generate with: openssl rand -base64 32
+JWT_SECRET=REPLACE_WITH_BASE64_32_RANDOM
+
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret

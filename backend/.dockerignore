@@ -1,7 +1,16 @@
+.env*
+!.env.example
 node_modules
-.env
 uploads
 *.log
 .DS_Store
 dist
 build
+.git
+coverage
+*.test.js
+*.spec.js
+README.md
+.gitignore
+.vscode
+.idea
