@@ -6,7 +6,7 @@ A full-stack MERN application for educational institutions and students to manag
 
 - **Frontend**: [https://academy-hub-tau.vercel.app](https://academy-hub-tau.vercel.app)
 - **Backend API**: [https://academy-hub-9fip.onrender.com](https://academy-hub-9fip.onrender.com)
-- **Repository**: [https://github.com/virusvickee/education-platform](https://github.com/virusvickee/education-platform)
+- **Repository**: [https://github.com/virusvickee/academy-hub](https://github.com/virusvickee/academy-hub)
 
 ## 📋 Overview
 
@@ -99,7 +99,7 @@ academy-hub/
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/virusvickee/academy-hub.git
 cd academy-hub
 ```
 
