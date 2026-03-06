@@ -1,10 +1,22 @@
-# Academy Hub - Educational Platform
+# 🎓 Academy Hub - Educational Platform
 
 A full-stack MERN application for educational institutions and students to manage and access learning materials.
 
+## 🔗 Live Links
+
+- **Frontend**: [https://academy-hub-tau.vercel.app](https://academy-hub-tau.vercel.app)
+- **Backend API**: [https://academy-hub-9fip.onrender.com](https://academy-hub-9fip.onrender.com)
+- **Repository**: [https://github.com/virusvickee/education-platform](https://github.com/virusvickee/education-platform)
+
 ## 📋 Overview
 
-This platform enables **Academies** to upload and manage educational PDFs with metadata, while **Students** can search, filter, and preview these materials. Built with performance optimization using Redis caching for faster PDF loading.
+Academy Hub is a comprehensive educational platform that bridges the gap between educational institutions (Academies) and students. The platform provides a centralized system for managing and accessing educational materials in PDF format.
+
+**Key Capabilities:**
+- **For Academies**: Upload, organize, and manage educational PDFs with rich metadata (subject, class, school)
+- **For Students**: Search, filter, preview, and access learning materials from multiple institutions
+- **Performance**: Redis caching ensures fast PDF loading and optimal user experience
+- **Security**: JWT authentication and role-based access control protect user data and resources
 
 ## 🎯 Features
 
@@ -18,8 +30,9 @@ This platform enables **Academies** to upload and manage educational PDFs with m
 - ✅ Register and login with email/password
 - ✅ Search PDFs by subject, class, and school
 - ✅ Advanced filtering capabilities
-- ✅ PDF preview functionality
-- ✅ Download educational materials
+- ✅ PDF inline preview with Google Docs Viewer
+- ✅ Open PDFs in new tab for full viewing experience
+- ✅ Access educational materials from multiple academies
 
 ### Performance & Security
 - ⚡ Redis caching for optimized PDF loading speed
@@ -142,23 +155,33 @@ Frontend runs on `http://localhost:5173`
 ## 🌐 Deployment
 
 ### Live Demo
-🔗 **Live Application**: [https://academy-hub-new.vercel.app](https://academy-hub-new.vercel.app)
+🔗 **Live Application**: [https://academy-hub-tau.vercel.app](https://academy-hub-tau.vercel.app)
 
 **Deployment Stack:**
 - **Frontend**: Vercel
-- **Backend**: Render (https://academy-hub-2rnz.onrender.com)
+- **Backend**: Render (https://academy-hub-9fip.onrender.com)
 - **Database**: MongoDB Atlas
 - **Storage**: Cloudinary
-- **Caching**: Redis
+- **Caching**: Redis Cloud
 
 ### Deploy Backend (Render)
 
 1. Create new Web Service on Render
 2. Connect your GitHub repository
 3. Configure:
-   - **Build Command**: `cd backend && npm install`
-   - **Start Command**: `cd backend && npm start`
-4. Add environment variables from `.env`
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Add environment variables:
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/academyhub
+   JWT_SECRET=your_jwt_secret_key
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   REDIS_URL=redis://default:password@host:port
+   NODE_ENV=production
+   ```
 
 ### Deploy Frontend (Vercel)
 
@@ -176,6 +199,73 @@ Or connect GitHub repository to Vercel for automatic deployments.
 
 3. Set environment variable:
    - `VITE_API_URL`: Your Render backend URL
+
+## 🏗️ Architecture
+
+### Frontend Architecture
+```
+frontend/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   └── ui/             # shadcn/ui components
+│   ├── pages/              # Route pages
+│   │   ├── Login.tsx       # Login page
+│   │   ├── Register.tsx    # Registration page
+│   │   ├── AcademyDashboard.tsx   # Academy dashboard
+│   │   └── StudentDashboard.tsx   # Student dashboard
+│   ├── hooks/              # Custom React hooks
+│   │   └── useAuth.ts      # Authentication hook
+│   ├── lib/                # Utilities and API
+│   │   ├── api.ts          # API client
+│   │   └── store.ts        # Zustand store
+│   └── main.tsx            # Entry point
+└── package.json
+```
+
+### Backend Architecture
+```
+backend/
+├── src/
+│   ├── config/             # Configuration files
+│   │   ├── db.js          # MongoDB connection
+│   │   ├── cloudinary.js  # Cloudinary config
+│   │   └── redis.js       # Redis client
+│   ├── controllers/        # Business logic
+│   │   ├── authController.js    # Auth operations
+│   │   └── pdfController.js     # PDF operations
+│   ├── middleware/         # Express middleware
+│   │   └── auth.js        # JWT verification
+│   ├── models/            # Mongoose schemas
+│   │   ├── User.js        # User model
+│   │   └── Pdf.js         # PDF document model
+│   ├── routes/            # API routes
+│   │   ├── authRoutes.js  # Auth endpoints
+│   │   └── pdfRoutes.js   # PDF endpoints
+│   └── server.js          # Express app setup
+└── package.json
+```
+
+## 🔄 Data Flow
+
+### Academy Upload Flow
+1. Academy logs in → JWT token stored
+2. Selects PDF file and fills metadata form
+3. Frontend sends multipart/form-data to `/api/pdfs/upload`
+4. Backend validates file (PDF only, max 10MB)
+5. Uploads to Cloudinary
+6. Saves metadata + URL to MongoDB
+7. Caches in Redis for fast retrieval
+8. Returns success response
+
+### Student Search Flow
+1. Student logs in → JWT token stored
+2. Enters search filters (subject/class/school)
+3. Frontend sends GET request to `/api/pdfs/search`
+4. Backend checks Redis cache first
+5. If not cached, queries MongoDB
+6. Caches results in Redis
+7. Returns PDF list to frontend
+8. Student clicks PDF → Opens in Google Docs Viewer
 
 ## 🔑 API Endpoints
 
