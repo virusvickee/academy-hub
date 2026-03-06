@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, LogOut, FileText, Eye, GraduationCap, BookOpen } from "lucide-react";
+import { Search, LogOut, FileText, Eye, GraduationCap, BookOpen, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -177,11 +177,18 @@ export default function StudentDashboard() {
           <div className="flex-1 overflow-hidden rounded-xl border bg-muted/50">
             {previewDoc && (
               <iframe
-                src={previewDoc.fileUrl}
+                src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewDoc.fileUrl)}&embedded=true`}
                 className="h-full w-full"
                 title={previewDoc.fileName}
               />
             )}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button asChild className="flex-1">
+              <a href={previewDoc?.fileUrl} target="_blank" rel="noopener noreferrer">
+                Open in New Tab
+              </a>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
