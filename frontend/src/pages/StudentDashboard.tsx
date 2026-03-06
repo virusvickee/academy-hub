@@ -174,43 +174,13 @@ export default function StudentDashboard() {
               {previewDoc?.fileName}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden rounded-xl border bg-muted/50 flex flex-col items-center justify-center p-8">
+          <div className="flex-1 overflow-hidden rounded-xl border bg-muted/50">
             {previewDoc && (
-              <div className="text-center space-y-4 max-w-md">
-                <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-destructive/10">
-                  <FileText className="h-10 w-10 text-destructive" />
-                </div>
-                <div>
-                  <p className="font-semibold text-lg mb-2">{previewDoc.fileName}</p>
-                  <div className="space-y-1 text-sm text-muted-foreground mb-6">
-                    <p><span className="font-medium">Subject:</span> {previewDoc.subjectName}</p>
-                    <p><span className="font-medium">Class:</span> {previewDoc.className}</p>
-                    <p><span className="font-medium">School:</span> {previewDoc.schoolName}</p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => window.open(previewDoc.fileUrl, '_blank')}
-                      className="gap-2 w-full"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View PDF
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = previewDoc.fileUrl;
-                        link.download = previewDoc.fileName;
-                        link.click();
-                      }}
-                      variant="outline"
-                      className="gap-2 w-full"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Download PDF
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <iframe
+                src={previewDoc.fileUrl}
+                className="h-full w-full"
+                title={previewDoc.fileName}
+              />
             )}
           </div>
         </DialogContent>
